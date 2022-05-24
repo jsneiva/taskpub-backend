@@ -1,0 +1,115 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           Int          @id @default(autoincrement())
+  username     String       @unique @db.VarChar(100)
+  email        String       @unique @db.VarChar(100)
+  password     String       @db.Text()
+  admin        Boolean      @default(false)
+  inativo      Boolean      @default(false)
+  url_avatar   String?      @db.Text()
+  created_at   DateTime     @default(now())
+  updated_at   DateTime     @default(now()) @updatedAt
+  tokens       Token[]
+  publicadores Publicador[]
+
+  @@map("usuarios")
+}
+
+model Token {
+  id         Int      @id @default(autoincrement())
+  user_id    Int
+  token      String   @db.Text()
+  is_revoked Boolean  @default(false)
+  created_at DateTime @default(now())
+  updated_at DateTime @default(now()) @updatedAt
+  user       User     @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: Cascade)
+
+  @@map("usuarios_tokens")
+}
+
+model Familia {
+  id           Int          @id @default(autoincrement())
+  nome         String       @db.VarChar(100)
+  created_at   DateTime     @default(now())
+  updated_at   DateTime     @default(now()) @updatedAt
+  publicadores Publicador[]
+
+  @@map("familias")
+}
+
+model GrupoCampo {
+  id           Int          @id @default(autoincrement())
+  nome         String       @db.VarChar(100)
+  created_at   DateTime     @default(now())
+  updated_at   DateTime     @default(now()) @updatedAt
+  publicadores Publicador[]
+
+  @@map("grupos_campos")
+}
+
+model Publicador {
+  id                    Int                  @id @default(autoincrement())
+  nome                  String               @db.VarChar(100)
+  apelido               String?              @db.VarChar(100)
+  endereco              String?              @db.VarChar(100)
+  numero_endereco       String?              @db.VarChar(15)
+  complemento_endereco  String?              @db.VarChar(100)
+  bairro                String?              @db.VarChar(100)
+  cidade                String?              @db.VarChar(100)
+  uf                    String?              @default("") @db.VarChar(2)
+  cep                   String?              @db.VarChar(8)
+  ponto_referencia      String?              @db.VarChar(100)
+  email                 String?              @db.VarChar(100)
+  sexo                  String?              @db.VarChar(1)
+  situacao              String               @default("AT") @db.VarChar(2)
+  estado_civil          String               @default("ST") @db.VarChar(2)
+  data_nascimento       DateTime?
+  data_batismo          DateTime?
+  data_publicador       DateTime?
+  data_pioneiro_regular DateTime?
+  observacao            String               @db.Text()
+  ungido                Boolean              @default(false)
+  chefe_familia         Boolean              @default(false)
+  anciao                Boolean              @default(false)
+  servo_ministerial     Boolean              @default(false)
+  pioneiro_regular      Boolean              @default(false)
+  pioneiro_auxiliar     Boolean              @default(false)
+  sup_grupo             Boolean              @default(false)
+  ajudante_grupo        Boolean              @default(false)
+  user_id               Int
+  grupo_campo_id        Int
+  familia_id            Int
+  created_at            DateTime             @default(now())
+  updated_at            DateTime             @default(now()) @updatedAt
+  user                  User                 @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: Cascade)
+  grupo_campo           GrupoCampo           @relation(fields: [grupo_campo_id], references: [id], onDelete: NoAction, onUpdate: Cascade)
+  familia               Familia              @relation(fields: [familia_id], references: [id], onDelete: NoAction, onUpdate: Cascade)
+  telefones             PublicadorTelefone[]
+
+  @@map("publicadores")
+}
+
+model PublicadorTelefone {
+  id            Int        @id @default(autoincrement())
+  publicador_id Int
+  telefone      String     @db.VarChar(30)
+  fixo          Boolean    @default(false)
+  whatsapp      Boolean    @default(false)
+  telegram      Boolean    @default(false)
+  created_at    DateTime   @default(now())
+  updated_at    DateTime   @default(now()) @updatedAt
+  publicador    Publicador @relation(fields: [publicador_id], references: [id], onDelete: Cascade, onUpdate: Cascade)
+
+  @@map("publicadores_telefones")
+}
